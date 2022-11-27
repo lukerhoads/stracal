@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/stracal/static/css/main.84d27c59.css",
+    "main.js": "/stracal/static/js/main.848525d1.js",
+    "static/media/Pacifico-Regular.ttf": "/stracal/static/media/Pacifico-Regular.c0d735fc04154e03a691.ttf",
+    "index.html": "/stracal/index.html",
+    "main.84d27c59.css.map": "/stracal/static/css/main.84d27c59.css.map",
+    "main.848525d1.js.map": "/stracal/static/js/main.848525d1.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.84d27c59.css",
+    "static/js/main.848525d1.js"
+  ]
+}
