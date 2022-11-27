@@ -1,0 +1,20 @@
+{
+    "short_name": "StraCal",
+    "name": "Strava Calendar",
+    "icons": [
+      {
+        "src": "icon.png",
+        "sizes": "64x64 32x32 24x24 16x16",
+        "type": "image/png"
+      },
+      {
+        "src": "strava.png",
+        "type": "image/png",
+        "sizes": "342x147"
+      }
+    ],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#fc4c02",
+    "background_color": "#ffffff"
+}

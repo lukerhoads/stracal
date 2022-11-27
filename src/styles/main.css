@@ -1053,6 +1053,9 @@ input:checked + .toggle-bg {
 .ml-auto {
   margin-left: auto;
 }
+.mr-auto {
+  margin-right: auto;
+}
 .mr-3 {
   margin-right: 0.75rem;
 }
@@ -1267,6 +1270,9 @@ input:checked + .toggle-bg {
 }
 .max-w-3xl {
   max-width: 48rem;
+}
+.max-w-\[80px\] {
+  max-width: 80px;
 }
 .max-w-sm {
   max-width: 24rem;

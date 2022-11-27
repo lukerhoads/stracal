@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import GitHubCalendar from 'react-github-contribution-calendar'
 import { demoCalendar } from './demoCalendar'
+import poweredByStrava from './images/strava.png'
 import "./styles/index.css"
 import "./styles/main.css"
 
-const REDIRECT_URI = process.env.REACT_APP_NODE_ENV === "prod" ? "https://lukerhoads.github.io/stracal" : "http://localhost:3000/redirect"
 const HEX_CHECK = /^#([0-9a-f]{3}){1,2}$/i
 
 type Event = {
@@ -73,7 +73,7 @@ function App() {
   }
 
   const connectStrava = () => {
-    window.location.href = `https://www.strava.com/oauth/authorize?client_id=${process.env.REACT_APP_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=read,activity:read_all`
+    window.location.href = `https://www.strava.com/oauth/authorize?client_id=${process.env.REACT_APP_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}&response_type=code&scope=read,activity:read_all`
   }
 
   useEffect(() => {
@@ -274,7 +274,7 @@ function App() {
 
       { !calendarReady && <p>Demo</p> }
       <div id="export-material" className='border-2 p-3 rounded-lg flex items-left flex-col'>
-        <p className='mb-2'>{userName + '\'s Strava Activity'}</p>
+        { calendarReady && <p className='mb-2'>{userName + '\'s Strava Activity'}</p> }
         <GitHubCalendar values={calendarReady ? calendarValues : demoCalendar} until={untilString} panelAttributes weekLabelAttributes monthLabelAttributes panelColors={Object.values(colorSet)} />
       </div>
 
@@ -289,6 +289,10 @@ function App() {
           )}
         </>
       )}
+
+      <div>
+        <img className="w-sm max-w-[80px] ml-auto mr-auto" src={poweredByStrava} alt="powered by strava" />
+      </div>
     </div>
   );
 }
