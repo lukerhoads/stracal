@@ -1,0 +1,9 @@
+@font-face {
+    font-family: Pacifico;
+    src: url(../fonts/Pacifico-Regular.ttf) format('truetype');
+}
+
+.logo {
+    font-family: Pacifico;
+    color: white;
+}

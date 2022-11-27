@@ -1,7 +1,11 @@
 import Color from 'color'
+import html2canvas from 'html2canvas'
 import { useEffect, useState } from 'react'
-import { SketchPicker } from 'react-color'
+import { HexColorPicker } from 'react-colorful'
 import GitHubCalendar from 'react-github-contribution-calendar'
+import { demoCalendar } from './demoCalendar'
+import "./styles/index.css"
+import "./styles/main.css"
 
 const REDIRECT_URI = "http://localhost:3000/redirect"
 const HEX_CHECK = /^#([0-9a-f]{3}){1,2}$/i
@@ -26,20 +30,38 @@ const genDateString = (date: Date) => {
   return date.toISOString().substring(0, 10)
 }
 
+const generateDemoCalendar = () => {
+  const events: Record<string, number> = {}
+  const today = new Date()
+  const oneYearAgo = new Date()
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  while (oneYearAgo < today) {
+    const score = Math.floor(Math.random() * 5)
+    if (score !== 0) {
+      events[genDateString(oneYearAgo)] = score
+    }
+    oneYearAgo.setDate(oneYearAgo.getDate() + 1)
+  }
+
+  return events
+}
+
 function App() {
   const [authenticated, setAuthenticated] = useState(false)
   const [calendarReady, setCalendarReady] = useState(false)
   const [calendarValues, setCalendarValues] = useState({})
-  const [mainColor, setMainColor] = useState("")
-  const [boxColor, setBoxColor] = useState("")
+  const [mainColor, setMainColor] = useState("#fc4c02")
+  const [boxColor, setBoxColor] = useState("#EEEEEE")
   const [colorSet, setColorSet] = useState({})
   const [untilString, setUntilString] = useState('')
+  const [mainColorActive, setMainColorActive] = useState(false)
+  const [boxColorActive, setBoxColorActive] = useState(false)
+  const [userName, setUserName] = useState("")
 
   const getToken = async (code?: string, refresh?: string) => {
     const baseUrl = `https://www.strava.com/api/v3/oauth/token?client_id=${process.env.REACT_APP_CLIENT_ID}&client_secret=${process.env.REACT_APP_CLIENT_SECRET}`
     const url = baseUrl + (code ? `&code=${code}&grant_type=authorization_code`
       : `&refresh_token=${refresh}&grant_type=refresh_token`)
-    
     return await fetch(url, {
       method: "POST",
     }).then(res => res.json()).then(data => {
@@ -59,6 +81,7 @@ function App() {
       setAuthenticated(true)
       return
     }
+    
     const splitUrl = window.location.href.split("&")
     if (splitUrl.length === 1) return
     const code = splitUrl[1].slice(5)
@@ -66,8 +89,21 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (!HEX_CHECK.test(mainColor)) return
+    const color = Color("#fc4c02")
+    setColorSet({
+      box: "#EEEEEE",
+      lightest: color.lighten(0.5).hex(),
+      lighter: color.lighten(0.25).hex(),
+      darker: color.darken(0.25).hex(),
+      darkest: color.darken(0.5).hex(),
+    })
 
+    const untilDate = new Date(2022, 10, 26)
+    setUntilString(genDateString(untilDate))
+  }, [])
+
+  useEffect(() => {
+    if (!HEX_CHECK.test(mainColor)) return
     const color = Color(mainColor)
     setColorSet({
       box: boxColor,
@@ -78,6 +114,36 @@ function App() {
     })
   }, [mainColor, boxColor])
 
+  useEffect(() => {
+    if (authenticated) {
+      getUserName()
+    }
+  }, [authenticated])
+
+  const saveCalendar = async () => {
+    if (!calendarReady) return 
+    const calendarDiv = document.getElementById("export-material")
+    if (!calendarDiv) return
+    const canvas = await html2canvas(calendarDiv)
+    const img = canvas.toDataURL("image/png")
+    const res = await fetch(img)
+    const blob = await res.blob()
+    const blobUrl = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = img.replace(/^.*[\\\/]/, '');
+    a.href = blobUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  const getUserName = async () => {
+    const res = await fetch(`https://www.strava.com/api/v3/athlete?access_token=${localStorage.getItem('strava-access-token')}`)
+    if (!res.ok) return 
+    const data = await res.json()
+    setUserName(data.username)
+  }
+
   const generateCalendar = async () => {
     if (localStorage.getItem("strava-access-token") === "undefined" || localStorage.getItem("strava-refresh-token") === "undefined") {
       connectStrava()
@@ -87,7 +153,6 @@ function App() {
     let maxMetric = 0;
     let minMetric = Number.MAX_VALUE
     const events: ConcatEvent[] = []
-
     const today = new Date()
     setUntilString(genDateString(today))
     const oneYearAgo = new Date()
@@ -164,18 +229,66 @@ function App() {
     setCalendarReady(true)
   }
 
+  const toggleMain = () => {
+    if (mainColorActive === false) {
+      setBoxColorActive(false)
+    }
+    setMainColorActive(!mainColorActive)
+  }
+
+  const toggleBox = () => {
+    if (boxColorActive === false) {
+      setMainColorActive(false)
+    }
+    setBoxColorActive(!boxColorActive)
+  }
+
   return (
-    <div className="App">
-      { authenticated ? (
-        <button onClick={() => generateCalendar()}>Generate Calendar</button> 
+    <div className="container mx-auto max-w-3xl pt-10 flex flex-col content-between space-y-2">
+      <div className='mb-3'>
+        <span className="p-1 logo box-decoration-clone bg-gradient-to-r from-orange-500 to-orange-400">
+          StraCal
+        </span>
+      </div>
+      
+      <div className="flex flex-row gap-5">
+        <div>
+        <p>Main Color</p>
+        <div style={{
+          backgroundColor: mainColor,
+        }} className={`rounded w-14 h-10`} onClick={() => toggleMain()} />
+        </div>
+
+        <div>
+        <p>Box Color</p>
+        <div style={{
+          backgroundColor: boxColor,
+        }} className={`rounded w-14 h-10`} onClick={() => toggleBox()} />
+        </div>
+      </div>
+
+      <div className="">
+        { mainColorActive && <HexColorPicker color={mainColor} onChange={(color) => setMainColor(color)} /> }
+        { boxColorActive && <HexColorPicker hidden={!boxColorActive} color={boxColor} onChange={(color) => setBoxColor(color)} /> }
+      </div>
+
+      { !calendarReady && <p>Demo</p> }
+      <div id="export-material" className='border-2 p-3 rounded-lg flex items-left flex-col'>
+        <p className='mb-2'>{userName + '\'s Strava Activity'}</p>
+        <GitHubCalendar values={calendarReady ? calendarValues : demoCalendar} until={untilString} panelAttributes weekLabelAttributes monthLabelAttributes panelColors={Object.values(colorSet)} />
+      </div>
+
+      { calendarReady ? (
+        <button className='btn rounded bg-orange-500 text-white py-2 px-3' onClick={() => saveCalendar()}>Save as image</button>
       ) : (
-        <button onClick={() => connectStrava()}>Connect Strava</button>
+        <>
+          { authenticated ? (
+            <button className='btn rounded bg-orange-500 text-white py-2 px-3' onClick={() => generateCalendar()}>Generate Calendar</button> 
+          ) : (
+            <button className='btn rounded bg-orange-500 text-white p-3' onClick={() => connectStrava()}>Connect Strava</button>
+          )}
+        </>
       )}
-      <p>Main Color</p>
-      <SketchPicker color={mainColor} onChange={(color, e) => setMainColor(color.hex)} />
-      <p>Box Color</p>
-      <SketchPicker color={boxColor} onChange={(color, e) => setBoxColor(color.hex)} />
-      { calendarReady && <GitHubCalendar values={calendarValues} until={untilString} panelAttributes weekLabelAttributes monthLabelAttributes panelColors={Object.values(colorSet)} /> }
     </div>
   );
 }
