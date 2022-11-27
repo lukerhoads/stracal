@@ -7,7 +7,7 @@ import { demoCalendar } from './demoCalendar'
 import "./styles/index.css"
 import "./styles/main.css"
 
-const REDIRECT_URI = "http://localhost:3000/redirect"
+const REDIRECT_URI = process.env.REACT_APP_NODE_ENV === "prod" ? "https://lukerhoads.github.io/stracal" : "http://localhost:3000/redirect"
 const HEX_CHECK = /^#([0-9a-f]{3}){1,2}$/i
 
 type Event = {
